@@ -2,9 +2,10 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
 
-from .base_frame import BaseFrame
+from frames.base_frame import BaseFrame
 
-from . import constants as csts
+from frames import constants as csts
+from utility.utility_fxns import calc_default_wt
 
 class FirstRunFrame(BaseFrame):
     def __init__(self,title="Welcom To My App Homie"):
@@ -39,7 +40,7 @@ class FirstRunFrame(BaseFrame):
                     widget.grid_remove()
                 users_name_entry.unbind('<Return>')
                 print(f"name: {self.name}") #debug
-                self.get_height()
+                self.get_gender()
             else:
                 messagebox.showerror("Error","Do you ever feeeel like a plastic bag?\
                                       Please enter something")
@@ -90,7 +91,7 @@ class FirstRunFrame(BaseFrame):
                 self.root.after(100,on_submit_height_after)
             else:
                 on_submit_height_after()
-            
+
         # Creating a Label
         users_ht_label = tk.Label(self.root, text="Enter your height:")
         users_ht_label.configure(font=csts.FONT,bg=csts.BG_COLOR,fg=csts.FG_COLOR)
@@ -99,7 +100,7 @@ class FirstRunFrame(BaseFrame):
         users_ht_feet_label = tk.Label(self.root, text="Feet:")
         users_ht_feet_label.configure(font=csts.FONT,bg=csts.BG_COLOR,fg=csts.FG_COLOR)
         users_ht_feet_label.grid(row=1, column=0,padx=csts.PADX, pady=csts.PADY)
-        feet_var = tk.IntVar()
+        feet_var = tk.IntVar(value=5)
         users_ht_feet_spinbox = tk.Spinbox(self.root, from_=0, to=10, width=5, format="%1.0f",
                                            textvariable=feet_var)
         users_ht_feet_spinbox.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
@@ -109,7 +110,7 @@ class FirstRunFrame(BaseFrame):
         users_ht_inches_label = tk.Label(self.root, text="Inches:")
         users_ht_inches_label.configure(font=csts.FONT,bg=csts.BG_COLOR,fg=csts.FG_COLOR)
         users_ht_inches_label.grid(row=1, column=2,padx=csts.PADX, pady=csts.PADY)
-        inches_var = tk.IntVar()
+        inches_var = tk.IntVar(value=7)
         users_ht_inches_spinbox = tk.Spinbox(self.root, from_=0, to=11, width=5, format="%1.0f",
                                              textvariable=inches_var)
         users_ht_inches_spinbox.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
@@ -127,15 +128,18 @@ class FirstRunFrame(BaseFrame):
         def on_submitwt_after():
             self.submit_button.config(state=tk.NORMAL)
             weight = wt_var.get()
-            if weight < 10 or weight > 700:
-                messagebox.showerror("Error","Please enter valid weight (10-700)")
+            goal_weight = wt_var2.get()
+            if weight < 10 or weight > 700 or goal_weight < 10 or goal_weight > 700:
+                messagebox.showerror("Error","Please enter valid weights (10-700)")
             else:
                 self.weight = weight
+                self.goal_weight = goal_weight
                 for widget in self.root.grid_slaves():
                     widget.grid_remove()
-                print(f"weight: {weight}")
+                print(f"weight: {self.weight}")
+                print(f"goalwt: {self.goal_weight}")
                 self.root.unbind('<Return>')
-                self.get_gender()
+                self.root.destroy()
         def on_submitwt(event = None):
             if event:
                 del event
@@ -143,24 +147,34 @@ class FirstRunFrame(BaseFrame):
                 self.root.after(100,on_submitwt_after)
             else:
                 on_submitwt_after()
-            
 
         # Creating a Label
-        users_wt_label = tk.Label(self.root, text="Enter your weight:")
+        users_wt_label = tk.Label(self.root, text="Enter your current/goal weight:")
         users_wt_label.configure(font=csts.FONT,bg=csts.BG_COLOR,fg=csts.FG_COLOR)
         users_wt_label.grid(row=0, column=0, columnspan=4, pady=csts.PADY)
         # Creating a Label and a Spinbox for pounds
-        users_wt_lbs_label = tk.Label(self.root, text="Pounds:")
+        users_wt_lbs_label = tk.Label(self.root, text="Current (lbs):")
         users_wt_lbs_label.configure(font=csts.FONT,bg=csts.BG_COLOR,fg=csts.FG_COLOR)
         users_wt_lbs_label.grid(row=1, column=0,padx=csts.PADX, pady=csts.PADY)
-        wt_var = tk.IntVar()
+        dflt_wt = calc_default_wt(self.height,self.gender)
+        wt_var = tk.IntVar(value=dflt_wt)
         users_wt_spinbox = tk.Spinbox(self.root, from_=0, to=700, width=5, format="%1.0f",
                                            textvariable=wt_var)
         users_wt_spinbox.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
         users_wt_spinbox.grid(row=1, column=1,padx=csts.PADX, pady=csts.PADY)
+
+        users_wt_lbs_label2 = tk.Label(self.root, text="Goal (lbs):")
+        users_wt_lbs_label2.configure(font=csts.FONT,bg=csts.BG_COLOR,fg=csts.FG_COLOR)
+        users_wt_lbs_label2.grid(row=2, column=0,padx=csts.PADX, pady=csts.PADY)
+        wt_var2 = tk.IntVar(value=dflt_wt-15)
+        users_wt_spinbox2 = tk.Spinbox(self.root, from_=0, to=700, width=5, format="%1.0f",
+                                           textvariable=wt_var2)
+        users_wt_spinbox2.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
+        users_wt_spinbox2.grid(row=2, column=1,padx=csts.PADX, pady=csts.PADY)
+
         # Creating a Submit button
         self.submit_button.configure(command=on_submitwt)
-        self.submit_button.grid(row=2, column=0, columnspan=4, pady=2*csts.PADY)
+        self.submit_button.grid(row=3, column=0, columnspan=4, pady=2*csts.PADY)
 
         self.root.bind('<Return>',on_submitwt)
     ##############################################################################################
@@ -184,7 +198,7 @@ class FirstRunFrame(BaseFrame):
                 self.root.after(100,on_submitgnd_after)
             else:
                 on_submitgnd_after()
-            
+
         # Creating a Label
         users_gnd_label = tk.Label(self.root, text="Enter your Gender:")
         users_gnd_label.configure(font=csts.FONT,bg=csts.BG_COLOR,fg=csts.FG_COLOR)
@@ -192,8 +206,10 @@ class FirstRunFrame(BaseFrame):
         # Creating a Label and a Spinbox for pounds
         gender_var = tk.StringVar(value='Male')  # default value
         gender_combobox = ttk.Combobox(self.root, values=('Male', 'Female', 'Other'),\
-                                       textvariable=gender_var)
-        gender_combobox.grid(row=1,column=1)
+                                       textvariable=gender_var,\
+                                       background=csts.BG_COLOR,font=csts.FONT,\
+                                       width=csts.FRSR_ENTRY_W)
+        gender_combobox.grid(row=1,column=1,padx=csts.PADX,pady=csts.PADY)
         # users_wt_spinbox.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
         # users_wt_spinbox.grid(row=1, column=1,padx=csts.PADX, pady=csts.PADY)
         # Creating a Submit button
@@ -206,6 +222,7 @@ class FirstRunFrame(BaseFrame):
     ## get bday   ################################################################################
     def get_bday(self):
         def validate_date_after():
+            self.submit_button.config(state=tk.NORMAL)
             month = month_entry.get()
             day = day_entry.get()
             year = year_entry.get()
@@ -221,7 +238,7 @@ class FirstRunFrame(BaseFrame):
                     for widget in self.root.grid_slaves():
                         widget.grid_remove()
                     self.root.unbind('<Return>')
-                    self.root.destroy()
+                    self.get_height()
                 else:
                     messagebox.showerror("Error", "Date out of range. Please enter a date between \
                                          01/01/1900 and today(for newborns).")
@@ -248,6 +265,7 @@ class FirstRunFrame(BaseFrame):
 
         # Month Entry
         month_entry = tk.Entry(self.root, width=2)
+        month_entry.insert(0,'01')
         month_entry.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
         month_entry.grid(row=1, column=0)
 
@@ -258,6 +276,7 @@ class FirstRunFrame(BaseFrame):
 
         # Day Entry
         day_entry = tk.Entry(self.root, width=2)
+        day_entry.insert(0,'01')
         day_entry.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
         day_entry.grid(row=1, column=2)
 
@@ -268,6 +287,7 @@ class FirstRunFrame(BaseFrame):
 
         # Year Entry
         year_entry = tk.Entry(self.root, width=4)
+        year_entry.insert(0,'2000')
         year_entry.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
         year_entry.grid(row=1, column=4)
 
@@ -287,14 +307,3 @@ class FirstRunFrame(BaseFrame):
 
         self.root.bind('<Return>',validate_date)
     ##############################################################################################
-        # print(f"weight: {self.weight}")
-        # print(f"gender: {self.gender}")
-        # print(f"birthday: {self.birthday}")
-        # print(f"goal_weight: {self.goal_weight}")
-
-
-
-    
-        
-
-        

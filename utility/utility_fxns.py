@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 
 
 def is_firstrun(usrinfo_path):
@@ -30,3 +31,24 @@ def generate_usrinfo_json(name: str,height: int, weight: int, gender: str,
     }
     with open(usrinfopath,'w',encoding='UTF-8') as file:
         json.dump(usr_info,file)
+
+
+def calc_default_wt(height: int, gender: str):
+    wht = 0
+    if gender == "Male":
+        wht = 120 + 4.25 * (height - 60)
+    else:
+        wht = 115 + 4.05 * (height - 60)
+    return round(wht)
+
+def calc_age(bday: str):
+    birthdate = datetime.strptime(bday,"%m/%d/%Y")
+    today = datetime.today()
+    age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+    #note 2nd subtraction is to make sure that if birthday hasnt happened yet wont add to age
+    return age
+
+def calc_bmi(weight: int, height: int):
+    return (weight / (height * height)) * 703
+
+
