@@ -1,5 +1,7 @@
 BG_COLOR = "#201f26"
 FG_COLOR = "#abbdc7"
+#"#54dece" - light blue
+# "#36543c"- light green
 MY_BLUE = "#4958e3"
 MY_GREEN = "#4fe075"
 ERRICO_PATH = "frames\\resources\\error_icon.ico"
