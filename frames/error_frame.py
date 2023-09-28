@@ -19,3 +19,15 @@ class ErrorFrame(BaseFrame):
         accept_btn = tk.Button(self.root, text="OK FINE WHATEVER", command=on_submit)
         accept_btn.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT,activebackground=csts.MY_GREEN)
         accept_btn.grid(row=2, column=0, columnspan=4, pady=2*csts.PADY)
+
+    def draw_weight_error(self):
+        def on_submit():
+            self.root.destroy()
+        mytxt = "Please enter a valid weight (10-700)"
+        ht_err_lbl = tk.Label(self.root, text=mytxt)
+        ht_err_lbl.configure(font=csts.FONT,bg=csts.BG_COLOR,fg=csts.FG_COLOR)
+        ht_err_lbl.grid(row=0,column=0)
+
+        accept_btn = tk.Button(self.root, text="OK FINE WHATEVER", command=on_submit)
+        accept_btn.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT,activebackground=csts.MY_GREEN)
+        accept_btn.grid(row=2, column=0, columnspan=4, pady=2*csts.PADY)

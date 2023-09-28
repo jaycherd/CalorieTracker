@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 
 from .base_frame import BaseFrame
 from .error_frame import ErrorFrame
@@ -32,6 +33,7 @@ class FirstRunFrame(BaseFrame):
             self.name = self.name_var.get()
             users_name_lbl.grid_remove()
             users_name_entry.grid_remove()
+            users_name_entry.unbind('<Return>')
             print(f"name: {self.name}") #debug
             self.get_height()
 
@@ -58,6 +60,7 @@ class FirstRunFrame(BaseFrame):
             else:
                 self.height = feet*12 + inches
                 print(f"height: {self.height}") #debug
+                users_ht_label.grid_remove()
                 users_ht_feet_label.grid_remove()
                 users_ht_feet_spinbox.grid_remove()
                 users_ht_inches_label.grid_remove()
@@ -97,10 +100,21 @@ class FirstRunFrame(BaseFrame):
     def get_weight(self):
         def on_submit():
             weight = wt_var.get()
-            print(f"weight: {weight}")
+            if weight < 10 or weight > 700:
+                err_frame = ErrorFrame()
+                err_frame.draw_weight_error()
+            else:
+                self.weight = weight
+                users_wt_label.grid_remove()
+                users_wt_lbs_label.grid_remove()
+                users_wt_spinbox.grid_remove()
+                self.submit_button.grid_remove()
+                print(f"weight: {weight}")
+                self.get_gender()
+                
 
         # Creating a Label
-        users_wt_label = tk.Label(self.root, text="Enter your weigwt:")
+        users_wt_label = tk.Label(self.root, text="Enter your weight:")
         users_wt_label.configure(font=csts.FONT,bg=csts.BG_COLOR,fg=csts.FG_COLOR)
         users_wt_label.grid(row=0, column=0, columnspan=4, pady=csts.PADY)
         # Creating a Label and a Spinbox for pounds
@@ -117,9 +131,28 @@ class FirstRunFrame(BaseFrame):
         self.submit_button.grid(row=2, column=0, columnspan=4, pady=2*csts.PADY)
     ##############################################################################################
 
+    ## get gender ################################################################################
+    def get_gender(self):
+        def on_submit():
+            gender = gender_var.get()
+            ## do error checking here
+            self.gender = gender
+            print(f"gender: {self.gender}")
+        # Creating a Label
+        users_gnd_label = tk.Label(self.root, text="Enter your Gender:")
+        users_gnd_label.configure(font=csts.FONT,bg=csts.BG_COLOR,fg=csts.FG_COLOR)
+        users_gnd_label.grid(row=0, column=0, columnspan=4, pady=csts.PADY)
+        # Creating a Label and a Spinbox for pounds
+        gender_var = tk.StringVar(value='Male')  # default value
+        gender_combobox = ttk.Combobox(self.root, values=('Male', 'Female', 'Other'), textvariable=gender_var)
+        gender_combobox.grid(row=1,column=1)
+        # users_wt_spinbox.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
+        # users_wt_spinbox.grid(row=1, column=1,padx=csts.PADX, pady=csts.PADY)
+        # Creating a Submit button
+        self.submit_button.configure(command=on_submit)
+        self.submit_button.grid(row=2, column=0, columnspan=4, pady=2*csts.PADY)
 
-
-
+    ##############################################################################################
 
         # print(f"weight: {self.weight}")
         # print(f"gender: {self.gender}")
