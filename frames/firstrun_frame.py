@@ -5,6 +5,7 @@ from datetime import datetime
 from frames.base_frame import BaseFrame
 
 from frames import constants as csts
+from user_data.utility.utility_fxns import convert_actlvl_toint
 from utility.utility_fxns import calc_default_wt
 
 class FirstRunFrame(BaseFrame):
@@ -21,8 +22,10 @@ class FirstRunFrame(BaseFrame):
         self.gender = ""
         self.birthday = ""
         self.goal_weight = -1
+        self.act_lvl = ""
 
         self.name_var = None
+        self.act_lvl_var = None
         self.get_name() # the first step, want things to be called one at a time rather than giant
         #gui where user would have to enter it all at once
         self.root.mainloop()
@@ -57,7 +60,7 @@ class FirstRunFrame(BaseFrame):
                                   font=csts.FONT)
         users_name_lbl.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR)
         users_name_lbl.grid(column = 0, row = 0,padx=csts.PADX,pady=csts.PADY)
-        self.name_var = tk.StringVar(self.root)
+        self.name_var = tk.StringVar(self.root,value="noname")
         users_name_entry = tk.Entry(self.root,textvariable=self.name_var,font=csts.FONT)
         users_name_entry.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR)
         users_name_entry.focus()
@@ -139,7 +142,7 @@ class FirstRunFrame(BaseFrame):
                 print(f"weight: {self.weight}")
                 print(f"goalwt: {self.goal_weight}")
                 self.root.unbind('<Return>')
-                self.root.destroy()
+                self.get_act_lvl()
         def on_submitwt(event = None):
             if event:
                 del event
@@ -302,8 +305,52 @@ class FirstRunFrame(BaseFrame):
 
         # Validate Button
         self.submit_button.configure(command=validate_date)
-        self.submit_button.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
         self.submit_button.grid(row=2, column=0, columnspan=5, pady=10)
 
         self.root.bind('<Return>',validate_date)
     ##############################################################################################
+
+    ## get activity_level ########################################################################
+    def get_act_lvl(self):
+        def act_submit_after():
+            self.submit_button.config(state=tk.NORMAL)
+            self.act_lvl = convert_actlvl_toint(self.act_lvl_var.get())
+            print(f"activity level: {self.act_lvl}")
+            for widget in self.root.grid_slaves():
+                widget.grid_remove()
+            self.root.unbind('<Return>')
+            self.root.destroy()
+        def act_submit(event=None):
+            if event:
+                self.submit_button.config(state=tk.ACTIVE)
+                self.root.after(100,act_submit_after)
+            else:
+                act_submit_after()
+        def create_radiobtn(option,row,col) -> None:
+            rbtn_frame = tk.Frame(self.root)
+            rbtn_frame.configure(bg=csts.BG_COLOR)
+            rbtn_frame.grid(row=row,column=col,padx=csts.PADX,pady=csts.PADY,sticky='w')
+            rbtn = tk.Radiobutton(rbtn_frame, variable=self.act_lvl_var, value=option)
+            rbtn.configure(bg=csts.BG_COLOR,fg=csts.MY_BLUE)
+            rbtn.pack(side='left')
+            label = tk.Label(rbtn_frame, text=option, wraplength=csts.FRSR_RADIO_LBL_W)
+            label.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FRSR_RB_FONT)
+            label.pack(side='left')
+        label = tk.Label(self.root, text='Choose Your Activity Level:')
+        label.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
+        label.grid(row=0, column=0, columnspan=5, pady=10)
+        option2 = csts.ACTLVL_OP2
+        self.act_lvl_var = tk.StringVar(value=option2)
+        create_radiobtn(csts.ACTLVL_OP1,1,0)
+        create_radiobtn(option2,1,1)
+        create_radiobtn(csts.ACTLVL_OP3,1,2)
+        create_radiobtn(csts.ACTLVL_OP4,1,3)
+        create_radiobtn(csts.ACTLVL_OP5,2,0)
+        create_radiobtn(csts.ACTLVL_OP6,2,1)
+        create_radiobtn(csts.ACTLVL_OP7,2,2)
+
+        self.submit_button.configure(command=act_submit)
+        self.submit_button.grid(row=3, column=0, columnspan=3, pady=10)
+        self.root.bind('<Return>',act_submit)
+
+        

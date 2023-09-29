@@ -1,1 +1,1 @@
-USRINFO_PATH = "user_data\\user_info.json"
+USRINFO_PATH = "user_data\\resources\\user_info.json"

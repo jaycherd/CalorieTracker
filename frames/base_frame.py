@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from . import constants as csts
+from frames import constants as csts
 
 
 

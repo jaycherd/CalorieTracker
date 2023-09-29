@@ -3,6 +3,7 @@ import datetime as dt
 
 from frames.dashboard_frame import DashboardFrame
 from frames.firstrun_frame import FirstRunFrame
+from user_data.user import User
 import utility.cmd_line_args as cmdla
 import utility.utility_fxns as utils
 import constants as csts
@@ -19,9 +20,11 @@ def main():
         fr_frame = FirstRunFrame()
         utils.generate_usrinfo_json(name=fr_frame.name,height=fr_frame.height,
                                     weight=fr_frame.weight,gender=fr_frame.gender,
-                                    birthday=fr_frame.birthday,goal_weight=195,
-                                    usrinfopath=csts.USRINFO_PATH)
-        # utils.generate_usrinfo()
+                                    birthday=fr_frame.birthday,goal_weight=fr_frame.goal_weight,
+                                    usrinfopath=csts.USRINFO_PATH,actlvl=fr_frame.act_lvl)
+    this_user = User()
+    print(repr(this_user))
+    # utils.generate_usrinfo()
     dashboard = DashboardFrame()
 
 
