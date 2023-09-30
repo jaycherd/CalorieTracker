@@ -18,10 +18,6 @@ def main():
     # if -rr or isfirstrun then need to generate json for user info: height,weight,etc.
     if (cmdla_res and cmdla_res[0] is True) or utils.is_firstrun(usrinfo_path=csts.USRINFO_PATH):
         fr_frame = FirstRunFrame()
-        utils.generate_usrinfo_json(name=fr_frame.name,height=fr_frame.height,
-                                    weight=fr_frame.weight,gender=fr_frame.gender,
-                                    birthday=fr_frame.birthday,goal_weight=fr_frame.goal_weight,
-                                    usrinfopath=csts.USRINFO_PATH,actlvl=fr_frame.act_lvl)
     this_user = User()
     print(repr(this_user))
     # utils.generate_usrinfo()

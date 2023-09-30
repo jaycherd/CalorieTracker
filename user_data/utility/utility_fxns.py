@@ -62,3 +62,9 @@ def convert_actlvl_toint(actlvl_str: str) -> float:
 
 def calc_maintenance_rate(bmr: float,act_factor: float):
     return bmr*act_factor
+
+
+def generate_usrinfo_json(usr_info: Dict, usrinfopath=USRINFO_PATH):
+    # [optional] auto generate goal weight with online recc
+    with open(usrinfopath,'w',encoding='UTF-8') as file:
+        json.dump(usr_info,file)

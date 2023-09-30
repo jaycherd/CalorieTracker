@@ -5,7 +5,7 @@ from datetime import datetime
 from frames.base_frame import BaseFrame
 
 from frames import constants as csts
-from user_data.utility.utility_fxns import convert_actlvl_toint
+from user_data.utility.utility_fxns import convert_actlvl_toint,generate_usrinfo_json
 from utility.utility_fxns import calc_default_wt
 
 class FirstRunFrame(BaseFrame):
@@ -22,6 +22,7 @@ class FirstRunFrame(BaseFrame):
         self.gender = ""
         self.birthday = ""
         self.goal_weight = -1
+        self.goal_days = -1
         self.act_lvl = ""
 
         self.name_var = None
@@ -132,11 +133,15 @@ class FirstRunFrame(BaseFrame):
             self.submit_button.config(state=tk.NORMAL)
             weight = wt_var.get()
             goal_weight = wt_var2.get()
+            goal_days = wt_var3.get()
             if weight < 10 or weight > 700 or goal_weight < 10 or goal_weight > 700:
                 messagebox.showerror("Error","Please enter valid weights (10-700)")
+            elif goal_days < 1:
+                messagebox.showerror("Error","Please enter a number greater than 0 for the days :)")
             else:
                 self.weight = weight
                 self.goal_weight = goal_weight
+                self.goal_days = goal_days
                 for widget in self.root.grid_slaves():
                     widget.grid_remove()
                 print(f"weight: {self.weight}")
@@ -175,9 +180,18 @@ class FirstRunFrame(BaseFrame):
         users_wt_spinbox2.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
         users_wt_spinbox2.grid(row=2, column=1,padx=csts.PADX, pady=csts.PADY)
 
+        users_wt_lbs_label3 = tk.Label(self.root, text="In how many days do you want to hit your goal?:")
+        users_wt_lbs_label3.configure(font=csts.FONT,bg=csts.BG_COLOR,fg=csts.FG_COLOR)
+        users_wt_lbs_label3.grid(row=3, column=0,padx=csts.PADX, pady=csts.PADY)
+        wt_var3 = tk.IntVar(value=100)
+        users_wt_spinbox3 = tk.Spinbox(self.root, from_=0, to=700, width=5, format="%1.0f",
+                                           textvariable=wt_var3)
+        users_wt_spinbox3.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
+        users_wt_spinbox3.grid(row=3, column=1,padx=csts.PADX, pady=csts.PADY)
+
         # Creating a Submit button
         self.submit_button.configure(command=on_submitwt)
-        self.submit_button.grid(row=3, column=0, columnspan=4, pady=2*csts.PADY)
+        self.submit_button.grid(row=4, column=0, columnspan=4, pady=2*csts.PADY)
 
         self.root.bind('<Return>',on_submitwt)
     ##############################################################################################
@@ -320,6 +334,7 @@ class FirstRunFrame(BaseFrame):
                 widget.grid_remove()
             self.root.unbind('<Return>')
             self.root.destroy()
+            self.all_steps_done()
         def act_submit(event=None):
             if event:
                 self.submit_button.config(state=tk.ACTIVE)
@@ -339,10 +354,9 @@ class FirstRunFrame(BaseFrame):
         label = tk.Label(self.root, text='Choose Your Activity Level:')
         label.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
         label.grid(row=0, column=0, columnspan=5, pady=10)
-        option2 = csts.ACTLVL_OP2
-        self.act_lvl_var = tk.StringVar(value=option2)
+        self.act_lvl_var = tk.StringVar(value=csts.ACTLVL_OP2)
         create_radiobtn(csts.ACTLVL_OP1,1,0)
-        create_radiobtn(option2,1,1)
+        create_radiobtn(csts.ACTLVL_OP2,1,1)
         create_radiobtn(csts.ACTLVL_OP3,1,2)
         create_radiobtn(csts.ACTLVL_OP4,1,3)
         create_radiobtn(csts.ACTLVL_OP5,2,0)
@@ -352,5 +366,85 @@ class FirstRunFrame(BaseFrame):
         self.submit_button.configure(command=act_submit)
         self.submit_button.grid(row=3, column=0, columnspan=3, pady=10)
         self.root.bind('<Return>',act_submit)
+    ##############################################################################################
+    
+    ## get plan ##################################################################################
+    def get_plan(self):
+        def plan_submit_after():
+            self.submit_button.config(tk.NORMAL)
+        def plan_submit(event=None):
+            if event:
+                self.submit_button.config(tk.ACTIVE)
+                self.root.after(100,plan_submit_after)
+            else:
+                plan_submit_after()
+
+
+
+
+
+    ##############################################################################################
+    def one_last_question(self) -> None:
+        pass
+    """
+                def setup_ui(self):
+                # Create a Frame
+                self.frame = tk.Frame(self)
+                self.frame.pack(fill=tk.BOTH, expand=True)
+                
+                # Create a Label
+                self.label = tk.Label(self.frame, text=f"Based on your responses it is recommended to intake {self.num_cals} calories per day to lose {self.weight} lbs in {self.num_days} days")
+                self.label.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
+                
+                # Create "Sounds Good" Button
+                self.accept_button = tk.Button(self.frame, text="Sounds Good", command=self.on_accept)
+                self.accept_button.grid(row=1, column=0, padx=10, pady=10)
+                
+                # Create "No" Button
+                self.decline_button = tk.Button(self.frame, text="No", command=self.on_decline)
+                self.decline_button.grid(row=1, column=1, padx=10, pady=10)
+                
+                # Create Entry widget but do not show it yet
+                self.entry = tk.Entry(self.frame)
+                self.submit_button = tk.Button(self.frame, text="Submit", command=self.on_submit)
+                
+            def on_accept(self):
+                print("User accepted the recommendation.")
+                self.destroy()  # or hide this window and open a new one
+                
+            def on_decline(self):
+                # Hide the current widgets
+                self.label.grid_remove()
+                self.accept_button.grid_remove()
+                self.decline_button.grid_remove()
+                
+                # Show the Entry widget
+                self.entry.grid(row=0, column=0, padx=10, pady=10)
+                self.submit_button.grid(row=0, column=1, padx=10, pady=10)
+                
+            def on_submit(self):
+                custom_calories = self.entry.get()
+                print(f"User entered custom calorie intake: {custom_calories}")
+                # You can now proceed to the next step or frame with the entered value.
+                
+        app = App()
+        app.mainloop()
+    """
+
+    ## make sure to call this last, after all things are done generate a json file to store dict
+    def all_steps_done(self) -> None:
+        usr_info = {
+            "name":             self.name,
+            "height":           self.height,
+            "weight":           self.weight,
+            "gender":           self.gender,
+            "birthday":         self.birthday,
+            "goal_weight":      self.goal_weight,
+            "activity_level":   self.act_lvl,
+            "goal_days":        self.goal_days
+        }
+        generate_usrinfo_json(usr_info=usr_info)
+
+    
 
         

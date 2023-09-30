@@ -17,21 +17,6 @@ def is_firstrun(usrinfo_path):
     return True #if path doesnt exist, or is empty, then isfirstrun
 
 
-def generate_usrinfo_json(name: str,height: int, weight: int, gender: str,
-                          birthday: str,goal_weight: int,usrinfopath: str,actlvl: int):
-    # [optional] auto generate goal weight with online recc
-    usr_info = {
-        "name": name,
-        "height": height,
-        "weight": weight,
-        "gender": gender,
-        "birthday": birthday,
-        "goal_weight": goal_weight,
-        "activity_level": actlvl
-    }
-    with open(usrinfopath,'w',encoding='UTF-8') as file:
-        json.dump(usr_info,file)
-
 
 def calc_default_wt(height: int, gender: str):
     wht = 0
