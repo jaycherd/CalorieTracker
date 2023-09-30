@@ -1,5 +1,4 @@
 import sys
-import datetime as dt
 
 from frames.dashboard_frame import DashboardFrame
 from frames.firstrun_frame import FirstRunFrame
