@@ -20,7 +20,7 @@ def main():
     this_user = User()
     print(repr(this_user))
     # utils.generate_usrinfo()
-    dashboard = DashboardFrame()
+    dashboard = DashboardFrame(user=this_user)
 
 
 

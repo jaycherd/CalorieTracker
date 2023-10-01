@@ -6,7 +6,7 @@ from frames import constants as csts
 
 
 class BaseFrame():
-    def __init__(self,title="DEFAULT TITLE",iconpath="",scr_w_pcnt=0,scr_h_pcnt=0):
+    def __init__(self,title="DEFAULT TITLE",iconpath="",scr_w_pcnt=0,scr_h_pcnt=0,alter_mouse=False,mouse_type=''):
         self.root = tk.Tk()
         self.root.title(title)
         self.root.config(bg=csts.BG_COLOR)
@@ -26,5 +26,22 @@ class BaseFrame():
             y_position = int((screen_height - window_height) / 2)
             # Set the window size and position
             self.root.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+
+        if alter_mouse:
+            self.mouse_alterations()
+            self.mouse_type = mouse_type
+            
+
+    def mouse_alterations(self):
+        self.root.bind('<Enter>',self.on_enter)
+        self.root.bind('<Leave>',self.on_leave)
+
+    def on_enter(self,event):
+        del event
+        self.root.configure(cursor=self.mouse_type)
+
+    def on_leave(self,event):
+        del event
+        self.root.configure(cursor='')
 
         

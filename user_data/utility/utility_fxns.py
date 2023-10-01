@@ -5,6 +5,7 @@ from typing import Dict, Optional
 
 from constants import USRINFO_PATH
 from frames.constants import ACTLVL_OP1,ACTLVL_OP2,ACTLVL_OP3,ACTLVL_OP4,ACTLVL_OP5,ACTLVL_OP6,ACTLVL_OP7
+from user_data.utility import constants_user as csts
 
 
 
@@ -68,3 +69,22 @@ def generate_usrinfo_json(usr_info: Dict, usrinfopath=USRINFO_PATH):
     # [optional] auto generate goal weight with online recc
     with open(usrinfopath,'w',encoding='UTF-8') as file:
         json.dump(usr_info,file)
+
+def log_weight(weight: float,filename=csts.WEIGHTLOG_PATH) -> None:
+    today = datetime.today()
+    today = today.strftime("%m/%d/%Y")
+    try:
+        with open(filename, 'r',encoding='UTF-8') as file:
+            data = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        data = []
+
+    # Define new entry
+    new_entry = {today: weight}
+
+    # Append new entry to data
+    data.append(new_entry)
+
+    # Write updated content back to file
+    with open(filename, 'w',encoding='UTF-8') as file:
+        json.dump(data, file)

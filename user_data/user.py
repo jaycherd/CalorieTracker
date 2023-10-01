@@ -33,7 +33,8 @@ class User():
         #below is some dope code to DYNAMICALLY set user attributes and name them after the dictionary key, giving value that corresponds to the key
         for key,value in user_dict.items():
             setattr(self,key,value)
-    
+        self.todays_calories = 0
+
     def print_user_attributes(self):
         for name,value in vars(self).items():
             if not callable(value):

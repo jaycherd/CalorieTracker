@@ -1,0 +1,1 @@
+WEIGHTLOG_PATH = "user_data\\resources\\weight_log.json"
