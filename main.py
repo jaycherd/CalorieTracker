@@ -21,6 +21,7 @@ def main():
     print(repr(this_user))
     # utils.generate_usrinfo()
     dashboard = DashboardFrame(user=this_user)
+    print("im back to main")
 
 
 

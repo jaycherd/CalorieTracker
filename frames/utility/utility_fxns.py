@@ -1,4 +1,6 @@
+import json
 from datetime import datetime
+from typing import List,Tuple
 
 from frames import constants as csts
 
@@ -75,3 +77,20 @@ def calc_days_to_goal(maintcal: float, cal_plan:int, currweight: float, goalweig
     cals_to_lose = weight_loss * 3500
     cal_def = maintcal - cal_plan
     return round(cals_to_lose/cal_def)
+
+def get_weights_datetimes_fromjson(fname: str) -> Tuple[List[float],List[datetime]]:
+    try:
+        with open(fname, 'r',encoding='UTF-8') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        print("weight log file NOT FOUND")
+        return ([-1],[-1])
+    except json.JSONDecodeError:
+        print("decoding weightlog error occurred, possibly because no weights have been logged")
+        return ([-1],[-1])
+    weights = []
+    dates = []
+    for date,weight in data.items():
+        weights.append(weight)
+        dates.append(datetime.strptime(date,"%m/%d/%Y"))
+    return (weights,dates)

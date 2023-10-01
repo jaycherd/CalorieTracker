@@ -1,11 +1,16 @@
+import sys
 import tkinter as tk
 from tkinter import ttk,messagebox
+from datetime import datetime
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from frames.base_frame import BaseFrame
 from frames import constants as csts
 from frames.utility import constants_dashboard as cdash
+from frames.utility import utility_fxns as frameutils
 from user_data.user import User
 from user_data.utility import utility_fxns as utils
 
@@ -32,6 +37,9 @@ class DashboardFrame(BaseFrame):
         self.bottomright_frame = self.create_styled_frame(self.root, 0.5, 0.73, 0.5, 0.27, bg='light coral')
 
         self.setup_frames()
+        
+        self.root.protocol("WM_DELETE_WINDOW",self.on_closing)
+        self.root.mainloop()
 
         
     def setup_frames(self):
@@ -46,13 +54,14 @@ class DashboardFrame(BaseFrame):
 
         self.loop_centermid_plot()
 
-        self.root.mainloop()
+
+        
 
     def loop_centermid_plot(self):
         if self.redraw_centermid_flag:
             self.setup_centermid(redraw=True)
             self.redraw_centermid_flag = False
-        self.root.after(1000,self.loop_centermid_plot)
+        self.after_id = self.root.after(1500,self.loop_centermid_plot)
         
 
 
@@ -62,8 +71,29 @@ class DashboardFrame(BaseFrame):
         frame.place(relx=relx, rely=rely, relwidth=relwidth, relheight=relheight)
         return frame
 
+    #want this frame to hold a weight log chart
     def setup_topleft(self):
-        pass
+        """
+        if SHOW_LINEPLOT:
+            years = [2006 + x for x in range(16)]
+            weights = [80,83,84,85,86,82,81,79,83,80,
+                    82,82,83,81,80,79]
+            plt.plot(years,weights,c="b",lw=3,linestyle="--")
+            plt.show()
+        """
+        #weights = List[weight], dates = List[datetime]
+        weights,dates = frameutils.get_weights_datetimes_fromjson(cdash.WEIGHTLOG_PATH)
+        fig,ax = plt.subplots()
+        ax.plot(dates,weights)
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%m/%d/%Y"))
+        plt.xticks(rotation=45)
+        # plt.tight_layout()
+        plt.subplots_adjust(bottom=0.1)
+
+        # Embed the plot in Tkinter frame
+        canvas = FigureCanvasTkAgg(fig, master=self.topleft_frame)
+        canvas_widget = canvas.get_tk_widget()
+        canvas_widget.pack(side='top',fill='both',expand=1)
 
     def setup_topright(self):
         pass
@@ -84,8 +114,9 @@ class DashboardFrame(BaseFrame):
     def setup_centermid(self,redraw=False):
         if redraw:
             for widget in self.centermid_frame.winfo_children():
-                widget.pack_forget()
-        print("center mid entered")
+                # widget.pack_forget()
+                widget.destroy() #for my usage, i dont use anymore, and they just hide with forget
+
         label = tk.Label(self.centermid_frame, text="Today's Calories:")
         label.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
         label.pack()
@@ -257,3 +288,9 @@ class DashboardFrame(BaseFrame):
         lbl = tk.Label(master=parent,text=text)
         lbl.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
         return lbl
+    
+
+    def on_closing(self):
+        if self.after_id:
+            self.root.after_cancel(self.after_id)
+        self.root.destroy()

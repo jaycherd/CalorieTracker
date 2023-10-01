@@ -77,13 +77,10 @@ def log_weight(weight: float,filename=csts.WEIGHTLOG_PATH) -> None:
         with open(filename, 'r',encoding='UTF-8') as file:
             data = json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
-        data = []
+        data = {}
 
     # Define new entry
-    new_entry = {today: weight}
-
-    # Append new entry to data
-    data.append(new_entry)
+    data[today] = weight
 
     # Write updated content back to file
     with open(filename, 'w',encoding='UTF-8') as file:
