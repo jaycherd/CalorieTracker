@@ -1,4 +1,7 @@
 import sys
+import pdb #for debugging
+import traceback
+import threading
 import tkinter as tk
 from tkinter import ttk,messagebox
 from datetime import datetime
@@ -6,6 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.ticker import AutoMinorLocator
 
 from frames.base_frame import BaseFrame
 from frames import constants as csts
@@ -21,23 +25,20 @@ class DashboardFrame(BaseFrame):
                          scr_h_pcnt=csts.DASH_H_PCNT,scr_w_pcnt=csts.DASH_W_PCNT,alter_mouse=True,mouse_type='dot')
         self.user = user
         self.redraw_centermid_flag = False
+        self.redraw_topleft_flag = False
+        self.after_id_centermid = None
+        self.after_id_topleft = None
 
-        self.topleft_frame = self.create_styled_frame(self.root, 0, 0, 0.5, 0.27)
-        
+        self.topleft_frame = self.create_styled_frame(self.root, 0, 0, 0.5, 0.27,bg=csts.BG_COLOR)
         self.topright_frame = self.create_styled_frame(self.root, 0.5, 0, 0.5, 0.27, bg='light green')
-        
         self.centerleft_frame = self.create_styled_frame(self.root, 0, 0.27, 0.25, 0.46, bg=csts.BG_COLOR)
-        
         self.centermid_frame = self.create_styled_frame(self.root, 0.25, 0.27, 0.5, 0.46, bg=csts.BG_COLOR)
-        
         self.centerright_frame = self.create_styled_frame(self.root, 0.75, 0.27, 0.25, 0.46, bg='light yellow')
-        
         self.bottomleft_frame = self.create_styled_frame(self.root, 0, 0.73, 0.5, 0.27)
-        
         self.bottomright_frame = self.create_styled_frame(self.root, 0.5, 0.73, 0.5, 0.27, bg='light coral')
 
         self.setup_frames()
-        
+
         self.root.protocol("WM_DELETE_WINDOW",self.on_closing)
         self.root.mainloop()
 
@@ -53,6 +54,7 @@ class DashboardFrame(BaseFrame):
         self.setup_bottomright()
 
         self.loop_centermid_plot()
+        self.loop_topleft_plot()
 
 
         
@@ -61,39 +63,70 @@ class DashboardFrame(BaseFrame):
         if self.redraw_centermid_flag:
             self.setup_centermid(redraw=True)
             self.redraw_centermid_flag = False
-        self.after_id = self.root.after(1500,self.loop_centermid_plot)
+        self.after_id_centermid = self.root.after(1500,self.loop_centermid_plot)
+    
+    def loop_topleft_plot(self):
+        if self.redraw_topleft_flag:
+            self.setup_topleft(redraw=True)
+            self.redraw_topleft_flag = False
+        self.after_id_topleft = self.root.after(1500,self.loop_topleft_plot)
         
 
 
 
     def create_styled_frame(self, parent, relx, rely, relwidth, relheight, bg='light blue'):
         frame = tk.Frame(parent, bg=bg)
+        frame.configure(highlightbackground=cdash.FRAMEBORDER_CLR,highlightcolor=cdash.FRAMEBORDER_CLR,highlightthickness=cdash.BORDERWIDTH)
         frame.place(relx=relx, rely=rely, relwidth=relwidth, relheight=relheight)
         return frame
 
     #want this frame to hold a weight log chart
-    def setup_topleft(self):
-        """
-        if SHOW_LINEPLOT:
-            years = [2006 + x for x in range(16)]
-            weights = [80,83,84,85,86,82,81,79,83,80,
-                    82,82,83,81,80,79]
-            plt.plot(years,weights,c="b",lw=3,linestyle="--")
-            plt.show()
-        """
-        #weights = List[weight], dates = List[datetime]
-        weights,dates = frameutils.get_weights_datetimes_fromjson(cdash.WEIGHTLOG_PATH)
-        fig,ax = plt.subplots()
-        ax.plot(dates,weights)
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%m/%d/%Y"))
-        plt.xticks(rotation=45)
-        # plt.tight_layout()
-        plt.subplots_adjust(bottom=0.1)
+    def setup_topleft(self,redraw=False):
+        if redraw:
+            for widget in self.topleft_frame.winfo_children():
+                # widget.pack_forget()
+                widget.destroy() #for my usage, i dont use anymore, and they just hide with forget
 
+        label = tk.Label(self.topleft_frame, text="Your Weight Log")
+        label.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=cdash.FONTSMALLBOLD)
+        label.pack()
+
+        weights, dates = frameutils.get_weights_datetimes_fromjson(cdash.WEIGHTLOG_PATH)
+        fig, ax = plt.subplots()
+        ax.plot(dates, weights,color=cdash.LIGHTBLUE)
+
+        #formatting - colors
+        fig.patch.set_facecolor(csts.BG_COLOR)
+        ax.set_facecolor(csts.BG_COLOR)
+        ax.tick_params(axis='x',colors=cdash.LIGHTBLUE)
+        ax.tick_params(axis='y',colors=cdash.LIGHTBLUE)
+        ax.xaxis.label.set_color(cdash.LIGHTBLUE)
+        ax.yaxis.label.set_color(cdash.LIGHTBLUE)
+
+        # Set labels for the axes
+        ax.set_xlabel('Date (MM/DD)')
+        ax.set_ylabel('Weight (lbs)')
+        
+        # Format the date on the x-axis
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%m/%d"))
+        
+        # Calculate the interval for major ticks
+        num_dates = len(dates)
+        major_interval = max(1, num_dates // 10)  # Avoid zero interval, ensure there's at least one major tick
+        
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=major_interval))
+        ax.xaxis.set_minor_locator(AutoMinorLocator())  # Automatically add minor locators
+        
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.subplots_adjust(bottom=0.4)
+        
         # Embed the plot in Tkinter frame
         canvas = FigureCanvasTkAgg(fig, master=self.topleft_frame)
         canvas_widget = canvas.get_tk_widget()
-        canvas_widget.pack(side='top',fill='both',expand=1)
+        canvas_widget.pack(side='top', fill='both', expand=1)
+        
+        plt.close(fig)
 
     def setup_topright(self):
         pass
@@ -117,8 +150,8 @@ class DashboardFrame(BaseFrame):
                 # widget.pack_forget()
                 widget.destroy() #for my usage, i dont use anymore, and they just hide with forget
 
-        label = tk.Label(self.centermid_frame, text="Today's Calories:")
-        label.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
+        label = tk.Label(self.centermid_frame, text="Today's Calories")
+        label.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=cdash.FONTBOLD)
         label.pack()
 
         fig = Figure(figsize=(5,5))
@@ -155,11 +188,11 @@ class DashboardFrame(BaseFrame):
             return "{:d}".format(absolute)
 
         # Plotting the Pie chart
-        wedges, texts, autotexts = ax.pie(sizes, explode=explode, labels=labels, colors=colors,
+        _,texts,_ = ax.pie(sizes, explode=explode, labels=labels, colors=colors,
             autopct=lambda pct: func(pct, sizes), startangle=140, textprops={'color': 'black'})
 
         # defining color for labels
-        label_color = csts.FG_COLOR  # or any other color you prefer
+        label_color = cdash.LIGHTBLUE  # or any other color you prefer
 
         # Applying color to 'Consumed' and 'Remaining' labels
         for text in texts:
@@ -185,13 +218,22 @@ class DashboardFrame(BaseFrame):
         pass
 
 
+    # def create_button(self, parent, text, command=None):
+    #     button = tk.Button(parent, text=text, command=command)
+    #     button.configure(bg=csts.BG_COLOR,fg=cdash.LIGHTBLUE,font=csts.FONT,
+    #                      borderwidth=cdash.CENTERLEFT_BRD_W+ 10,activebackground=csts.MY_GREEN)
+    #     button.configure(highlightbackground=cdash.FRAMEBORDER_CLR,highlightcolor=cdash.FRAMEBORDER_CLR,highlightthickness=cdash.BORDERWIDTH)
+    #     return button
     def create_button(self, parent, text, command=None):
-        button = tk.Button(parent, text=text, command=command)
-        button.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT,
-                         borderwidth=cdash.CENTERLEFT_BRD_W,
-                         highlightcolor=csts.MY_GREEN,activebackground=csts.MY_GREEN,
-                         highlightbackground=csts.MY_BLUE)
-        return button
+        border_frame = tk.Frame(parent, background=cdash.FRAMEBORDER_CLR, bd=cdash.CENTERLEFT_BRD_W)
+        border_frame.pack(fill='both', expand=True)  # Ensure border_frame expands
+        
+        button = tk.Button(border_frame, text=text, command=command, bg=csts.BG_COLOR, 
+                        fg=cdash.LIGHTBLUE, font=csts.FONT, activebackground=csts.MY_GREEN)
+        button.pack(side='left', fill='both', expand=True)  # Button expands within border_frame
+        
+        return border_frame  # Return border_frame since it’s the container holding the button
+
     
     def log_weight_popup(self):
         popup = tk.Toplevel(self.root)
@@ -224,10 +266,11 @@ class DashboardFrame(BaseFrame):
     
     def log_weight(self,weight,popup):
         # Code to log weight
-        print("Logged Weight:", weight)
         try:
             weight = float(weight)
             utils.log_weight(weight=weight)
+            print("Logged Weight:", weight)
+            self.redraw_topleft_flag = True
         except ValueError:
             messagebox.showerror("Error","Please enter valid number, weight NOT logged")
         popup.destroy()
@@ -291,6 +334,15 @@ class DashboardFrame(BaseFrame):
     
 
     def on_closing(self):
-        if self.after_id:
-            self.root.after_cancel(self.after_id)
-        self.root.destroy()
+        if self.after_id_centermid:
+            self.root.after_cancel(self.after_id_centermid)
+        if self.after_id_topleft:
+            self.root.after_cancel(self.after_id_topleft)
+        try:
+            self.root.destroy()
+        except Exception as err:
+            print(err)
+            traceback.print_exc()
+            print("error destroying root!!")
+        # sys.exit(0)
+        # pdb.set_trace()

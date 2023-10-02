@@ -1,3 +1,10 @@
 VALUE = 1
 CENTERLEFT_BRD_W = 6
 WEIGHTLOG_PATH = "user_data\\resources\\weight_log.json"
+FONTSMALL = ("Arial",10)
+FONTSMALLBOLD = ("Arial Bold",10)
+FONTBOLD = ("Arial Bold",16)
+LIGHTBLUE = "#428af5"
+FRAMEBORDER_CLR = "#0c112b"
+MYDARKTEAL = "#1f3f45"
+BORDERWIDTH = 4
