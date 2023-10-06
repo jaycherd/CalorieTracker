@@ -1,8 +1,10 @@
 import json
 from datetime import datetime
 from typing import List,Tuple
+from icecream import ic
 
 from frames import constants as csts
+from frames.utility import constants_dashboard as cdash
 
 
 
@@ -94,3 +96,98 @@ def get_weights_datetimes_fromjson(fname: str) -> Tuple[List[float],List[datetim
         weights.append(weight)
         dates.append(datetime.strptime(date,"%m/%d/%Y"))
     return (weights,dates)
+
+def get_calories_datetimes_fromjson(fname=cdash.CALORIESLOG_PATH) -> Tuple[List[float],List[datetime]]:
+    try:
+        with open(fname, 'r',encoding='UTF-8') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        print("weight log file NOT FOUND")
+        return ([-1],[-1])
+    except json.JSONDecodeError:
+        print("decoding weightlog error occurred, possibly because no weights have been logged")
+        return ([-1],[-1])
+    calories = []
+    dates = []
+    for date,weight in data.items():
+        calories.append(weight)
+        dates.append(datetime.strptime(date,"%m/%d/%Y"))
+    return (calories,dates)
+
+def log_calories(calories: float,filename=cdash.CALORIESLOG_PATH) -> None:
+    today = datetime.today()
+    today = today.strftime("%m/%d/%Y")
+    try:
+        with open(filename, 'r',encoding='UTF-8') as file:
+            data = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        data = {} #if file empty start with empty dictionary
+
+    if today in data:
+        data[today] += calories
+    else:
+        data[today] = calories
+
+    # Write updated content back to file
+    with open(filename, 'w',encoding='UTF-8') as file:
+        json.dump(data, file)
+
+def check_todays_calories(filename=cdash.CALORIESLOG_PATH) -> float:
+    today = datetime.today()
+    today = today.strftime("%m/%d/%Y")
+    try:
+        with open(filename, 'r',encoding='UTF-8') as file:
+            data = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return 0.0
+
+    if today in data:
+        return data[today] #return todays calories
+    return 0.0 #return 0, no cals been logged for today, must be first time opening app today
+
+def log_food(servings,food_dict,fname=cdash.FOODLOG_PATH):
+    def convert_servings(servings: str) -> (int,str):
+        if servings == "":
+            return 0,""
+        num_str = ""
+        char_to_app = ""
+        for char in servings:
+            if char.isnumeric() and char_to_app == "":
+                num_str += char
+            else:
+                if char == " " and num_str != "" and char_to_app != "":
+                    break
+                char_to_app += char
+        if num_str != "":
+            return float(num_str),char_to_app
+        else:
+            return 0,""
+
+    try:
+        with open(fname, 'r',encoding='UTF-8') as file:
+            data = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        data = {} #if file empty start with empty dictionary
+    #key is exact time, so user can log food over and over, and get new logs;
+    exact_time = datetime.today()
+    exact_time = exact_time.strftime("%m/%d/%Y %H:%M:%S")
+
+    #util fxn looks at the string for serving size for ex: 15oz -> then returns tuple(15.0,oz)
+    amount_str,units = convert_servings(food_dict.get('servingsize',''))
+    data[exact_time] = {
+        'name': food_dict.get('name','unknown Name!'),
+        'serving_size': food_dict.get('servingsize',0),
+        'amount_total': str(amount_str * servings) + units,
+        'calories': food_dict.get('energy_serving_kcal',0),
+        'calories_total': food_dict.get('energy_serving_kcal',0)*servings,
+        'protein': food_dict.get('proteins_serving',0),
+        'protein_total': food_dict.get('proteins_serving',0)*servings,
+        'fat': food_dict.get('fats_serving',0),
+        'fat_total': food_dict.get('fats_serving',0)*servings,
+        'carbs': food_dict.get('carbohydrates_serving',0),
+        'carbs_total': food_dict.get('carbohydrates_serving',0)*servings
+    }
+
+    # Write updated content back to file
+    with open(fname, 'w',encoding='UTF-8') as file:
+        json.dump(data, file,indent=4)

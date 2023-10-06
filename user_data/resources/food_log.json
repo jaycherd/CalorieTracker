@@ -1,0 +1,41 @@
+{
+    "10/05/2023 21:56:03": {
+        "name": "Farm Fresh, Boneless Skinless Chicken Breasts",
+        "serving_size": "4 ONZ (112 g)",
+        "amount_total": "12.0 ONZ",
+        "calories": 109.70363288718929,
+        "calories_total": 329.11089866156783,
+        "protein": 21,
+        "protein_total": 63.0,
+        "fat": 2.5,
+        "fat_total": 7.5,
+        "carbs": 0,
+        "carbs_total": 0.0
+    },
+    "10/05/2023 21:56:14": {
+        "name": "Nutella",
+        "serving_size": "15g",
+        "amount_total": "45.0g",
+        "calories": 80.78393881453155,
+        "calories_total": 242.35181644359466,
+        "protein": 0.945,
+        "protein_total": 2.835,
+        "fat": 4.63,
+        "fat_total": 13.89,
+        "carbs": 8.62,
+        "carbs_total": 25.86
+    },
+    "10/05/2023 21:59:47": {
+        "name": "Nutella",
+        "serving_size": "15 g",
+        "amount_total": "45.0 g",
+        "calories": 80.78393881453155,
+        "calories_total": 242.35181644359466,
+        "protein": 0.945,
+        "protein_total": 2.835,
+        "fat": 4.63,
+        "fat_total": 13.89,
+        "carbs": 8.62,
+        "carbs_total": 25.86
+    }
+}

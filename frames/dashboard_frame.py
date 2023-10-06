@@ -15,6 +15,7 @@ from frames.base_frame import BaseFrame
 from frames import constants as csts
 from frames.utility import constants_dashboard as cdash
 from frames.utility import utility_fxns as frameutils
+from frames.utility.custom_entry import CustomEntry
 from user_data.user import User
 from user_data.utility import utility_fxns as utils
 
@@ -24,17 +25,15 @@ class DashboardFrame(BaseFrame):
         super().__init__(title=title,iconpath=csts.DASHICO_PATH,
                          scr_h_pcnt=csts.DASH_H_PCNT,scr_w_pcnt=csts.DASH_W_PCNT,alter_mouse=True,mouse_type='dot')
         self.user = user
-        self.redraw_centermid_flag = False
-        self.redraw_topleft_flag = False
         self.after_id_centermid = None
         self.after_id_topleft = None
 
-        self.topleft_frame = self.create_styled_frame(self.root, 0, 0, 0.5, 0.27,bg=csts.BG_COLOR)
-        self.topright_frame = self.create_styled_frame(self.root, 0.5, 0, 0.5, 0.27, bg='light green')
-        self.centerleft_frame = self.create_styled_frame(self.root, 0, 0.27, 0.25, 0.46, bg=csts.BG_COLOR)
-        self.centermid_frame = self.create_styled_frame(self.root, 0.25, 0.27, 0.5, 0.46, bg=csts.BG_COLOR)
-        self.centerright_frame = self.create_styled_frame(self.root, 0.75, 0.27, 0.25, 0.46, bg='light yellow')
-        self.bottomleft_frame = self.create_styled_frame(self.root, 0, 0.73, 0.5, 0.27)
+        self.topleft_frame = self.create_styled_frame(self.root, 0, 0, 0.5, 0.27)
+        self.topright_frame = self.create_styled_frame(self.root, 0.5, 0, 0.5, 0.27,)
+        self.centerleft_frame = self.create_styled_frame(self.root, 0, 0.27, 0.25, 0.46,)
+        self.centermid_frame = self.create_styled_frame(self.root, 0.25, 0.27, 0.5, 0.46,)
+        self.centerright_frame = self.create_styled_frame(self.root, 0.75, 0.27, 0.25, 0.46)
+        self.bottomleft_frame = self.create_styled_frame(self.root, 0, 0.73, 0.5, 0.27,bg='green')
         self.bottomright_frame = self.create_styled_frame(self.root, 0.5, 0.73, 0.5, 0.27, bg='light coral')
 
         self.setup_frames()
@@ -53,28 +52,28 @@ class DashboardFrame(BaseFrame):
         self.setup_bottomleft()
         self.setup_bottomright()
 
-        self.loop_centermid_plot()
-        self.loop_topleft_plot()
+        # self.loop_centermid_plot()
+        # self.loop_topleft_plot()
 
 
         
 
-    def loop_centermid_plot(self):
-        if self.redraw_centermid_flag:
-            self.setup_centermid(redraw=True)
-            self.redraw_centermid_flag = False
-        self.after_id_centermid = self.root.after(1500,self.loop_centermid_plot)
+    # def loop_centermid_plot(self):
+    #     if self.redraw_centermid_flag:
+    #         self.setup_centermid(redraw=True)
+    #         self.redraw_centermid_flag = False
+    #     self.after_id_centermid = self.root.after(1500,self.loop_centermid_plot)
     
-    def loop_topleft_plot(self):
-        if self.redraw_topleft_flag:
-            self.setup_topleft(redraw=True)
-            self.redraw_topleft_flag = False
-        self.after_id_topleft = self.root.after(1500,self.loop_topleft_plot)
+    # def loop_topleft_plot(self):
+    #     if self.redraw_topleft_flag:
+    #         self.setup_topleft(redraw=True)
+    #         self.redraw_topleft_flag = False
+    #     self.after_id_topleft = self.root.after(1500,self.loop_topleft_plot)
         
 
 
 
-    def create_styled_frame(self, parent, relx, rely, relwidth, relheight, bg='light blue'):
+    def create_styled_frame(self, parent, relx, rely, relwidth, relheight, bg=csts.BG_COLOR):
         frame = tk.Frame(parent, bg=bg)
         frame.configure(highlightbackground=cdash.FRAMEBORDER_CLR,highlightcolor=cdash.FRAMEBORDER_CLR,highlightthickness=cdash.BORDERWIDTH)
         frame.place(relx=relx, rely=rely, relwidth=relwidth, relheight=relheight)
@@ -94,6 +93,19 @@ class DashboardFrame(BaseFrame):
         weights, dates = frameutils.get_weights_datetimes_fromjson(cdash.WEIGHTLOG_PATH)
         fig, ax = plt.subplots()
         ax.plot(dates, weights,color=cdash.LIGHTBLUE)
+
+        #horizontal line to represent goal weight
+        goal_weight = self.user.goal_weight
+        ax.axhline(y=goal_weight,color=cdash.LIGHTRED,linestyle='--')
+        #horizontal line label
+        ax.text(dates[0], goal_weight + 1, f'Goal Weight ({round(goal_weight)})', color=cdash.LIGHTRED, va='bottom')
+
+        #explicitly set limits to plot data
+        min_limit = min(goal_weight, *weights) - 10
+        max_limit = max(goal_weight, *weights) + 10
+        ax.set_ylim(min_limit,max_limit)
+        
+        
 
         #formatting - colors
         fig.patch.set_facecolor(csts.BG_COLOR)
@@ -128,8 +140,63 @@ class DashboardFrame(BaseFrame):
         
         plt.close(fig)
 
-    def setup_topright(self):
-        pass
+    def setup_topright(self,redraw=False):
+        if redraw:
+            for widget in self.topright_frame.winfo_children():
+                # widget.pack_forget()
+                widget.destroy() #for my usage, i dont use anymore, and they just hide with forget
+
+        label = tk.Label(self.topright_frame, text="Your Calorie Log")
+        label.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=cdash.FONTSMALLBOLD)
+        label.pack()
+
+        calories, dates = frameutils.get_calories_datetimes_fromjson()
+        fig, ax = plt.subplots()
+        ax.plot(dates, calories,color=cdash.LIGHTBLUE)
+
+        #formatting - colors
+        fig.patch.set_facecolor(csts.BG_COLOR)
+        ax.set_facecolor(csts.BG_COLOR)
+        ax.tick_params(axis='x',colors=cdash.LIGHTBLUE)
+        ax.tick_params(axis='y',colors=cdash.LIGHTBLUE)
+        ax.xaxis.label.set_color(cdash.LIGHTBLUE)
+        ax.yaxis.label.set_color(cdash.LIGHTBLUE)
+
+        #horizontal line - calorie plan
+        cal_plan = self.user.cal_plan
+        ax.axhline(y=cal_plan,color=cdash.LIGHTRED,linestyle='--')
+        #horizontal line label
+        ax.text(dates[0], cal_plan + 1, f'Goal Calories ({round(cal_plan)})', color=cdash.LIGHTRED, va='bottom')
+
+        #explicitly set limits to plot data
+        min_limit = min(cal_plan, *calories) - 250
+        max_limit = max(cal_plan, *calories) + 250
+        ax.set_ylim(min_limit,max_limit)
+
+        # Set labels for the axes
+        ax.set_xlabel('Date (MM/DD)')
+        ax.set_ylabel('Calories (lbs)')
+        
+        # Format the date on the x-axis
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%m/%d"))
+        
+        # Calculate the interval for major ticks
+        num_dates = len(dates)
+        major_interval = max(1, num_dates // 10)  # Avoid zero interval, ensure there's at least one major tick
+        
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=major_interval))
+        ax.xaxis.set_minor_locator(AutoMinorLocator())  # Automatically add minor locators
+        
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.subplots_adjust(bottom=0.4)
+        
+        # Embed the plot in Tkinter frame
+        canvas = FigureCanvasTkAgg(fig, master=self.topright_frame)
+        canvas_widget = canvas.get_tk_widget()
+        canvas_widget.pack(side='top', fill='both', expand=1)
+        
+        plt.close(fig)
 
     def setup_centerleft(self):
         # Create buttons
@@ -160,7 +227,7 @@ class DashboardFrame(BaseFrame):
         ax.set_facecolor(csts.BG_COLOR)
         
         
-        consumed = self.user.todays_calories
+        consumed = frameutils.check_todays_calories()
         remaining = max(self.user.cal_plan - consumed, 0)  # Avoid negative values
         overconsumed_flag = None
         # Data to plot
@@ -206,8 +273,14 @@ class DashboardFrame(BaseFrame):
         widget.pack()
 
     def setup_centerright(self):
-        # Additional setup for the center right frame.
-        pass
+        label = tk.Label(self.centerright_frame, text="Food Search")
+        label.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=cdash.FONTBOLD)
+        label.pack()
+
+        #need to do a search to generate the list
+        autocomplete_list = ["apple", "banana", "pear", "pineapple", "peach", "plum", "pomegranate", "papaya"]
+        self.entry = CustomEntry(self.centerright_frame, autocomplete_list)
+        self.entry.pack()
     
     def setup_bottomleft(self):
         # Additional setup for the bottom left frame.
@@ -257,6 +330,7 @@ class DashboardFrame(BaseFrame):
         entry = tk.Entry(popup, textvariable=weight_var)
         entry.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
         entry.pack()
+        entry.focus_set()
         
         submit_btn = self.create_button(parent=popup, text="Submit", command=lambda: self.log_weight(weight_var.get(), popup))
         submit_btn.pack()
@@ -270,10 +344,10 @@ class DashboardFrame(BaseFrame):
             weight = float(weight)
             utils.log_weight(weight=weight)
             print("Logged Weight:", weight)
-            self.redraw_topleft_flag = True
         except ValueError:
             messagebox.showerror("Error","Please enter valid number, weight NOT logged")
         popup.destroy()
+        self.setup_topleft(redraw=True)
 
 
     def log_calories_popup(self):
@@ -287,6 +361,7 @@ class DashboardFrame(BaseFrame):
         position_right = int(self.root.winfo_screenwidth()/2 - window_width/2)
         position_down = int(self.root.winfo_screenheight()/2 - window_height/2)
         
+        
         # Positions the window in the center of the page.
         popup.geometry(f"+{position_right}+{position_down}")
         
@@ -298,24 +373,28 @@ class DashboardFrame(BaseFrame):
         entry = tk.Entry(popup, textvariable=weight_var)
         entry.configure(bg=csts.BG_COLOR,fg=csts.FG_COLOR,font=csts.FONT)
         entry.pack()
+        entry.focus_set()
+        
         
         submit_btn = self.create_button(parent=popup, text="Submit", command=lambda: self.log_calories(weight_var.get(), popup))
         submit_btn.pack()
-
+        
+        popup.bind('<Return>',lambda event: self.log_calories(weight_var.get(), popup))
         popup.grab_set() #makes popup modal, aka user must interact with popup before
         #making more inputs to the dashboard
 
-    def log_calories(self,calories,popup):
+    def log_calories(self,calories,popup,event=None):
         # Code to log calories
         try:
             calories = float(calories)
             self.user.todays_calories += calories
-            self.redraw_centermid_flag = True
             print("Logged calories:", calories)
             print(f"total logged: {self.user.todays_calories}")
+            frameutils.log_calories(calories=calories)
         except ValueError:
             messagebox.showerror("Error","Please enter valid number, calories NOT logged")
         popup.destroy()
+        self.setup_centermid(redraw=True)
 
     def third_command(self):
         # Code for the third button
