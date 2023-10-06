@@ -185,7 +185,10 @@ def log_food(servings,food_dict,fname=cdash.FOODLOG_PATH):
         'fat': food_dict.get('fats_serving',0),
         'fat_total': food_dict.get('fats_serving',0)*servings,
         'carbs': food_dict.get('carbohydrates_serving',0),
-        'carbs_total': food_dict.get('carbohydrates_serving',0)*servings
+        'carbs_total': food_dict.get('carbohydrates_serving',0)*servings,
+        'sugars': food_dict.get('sugars_serving',0),
+        'sugars_total': food_dict.get('sugars_serving',0)*servings
+
     }
 
     # Write updated content back to file
