@@ -6,14 +6,16 @@ import threading
 
 from frames.utility import constants_dashboard as cdash
 from frames.utility import querying as query
-from frames.utility.utility_fxns import log_food
+from frames.utility.utility_fxns import log_food,log_calories
 
 class CustomEntry(ttk.Entry):
-    def __init__(self, parent, name_id_tuples=None, *args, **kwargs):
+    def __init__(self, parent, name_id_tuples=None,dboard_obj=None, *args, **kwargs):
         parent_w = parent.winfo_width()
+        self.parent = parent
         self.desired_w = int(parent_w * 0.8)
         average_char_w_pixels = 10
         self.desired_w = self.desired_w//average_char_w_pixels
+        self.dboard_obj = dboard_obj
         super().__init__(parent, *args,width=self.desired_w,font=cdash.FONTSMED, **kwargs)
         self.listbox = None
         self.name_id_tuples =  name_id_tuples
@@ -83,7 +85,13 @@ class CustomEntry(ttk.Entry):
                 if messagebox.askyesno("Confirmation",f"Log {self.food_chosen_dict['name']}? You can choose the amount next step"):
                     servings = simpledialog.askfloat("Input",f"Serving size ({self.food_chosen_dict['servingsize']}), how many servings?")
                     if servings is not None:
-                        log_food(servings=servings,food_dict=self.food_chosen_dict)
+                        log_food(servings=servings,food_dict=self.food_chosen_dict) #probs need code to also update calorie log
+                        calories = self.food_chosen_dict.get('energy_serving_kcal',0)*servings
+                        if calories != 0:
+                            log_calories(calories=self.food_chosen_dict.get('energy_serving_kcal',0)*servings)
+                            self.dboard_obj.setup_centermid(redraw=True)
+                            self.dboard_obj.setup_topright(redraw=True)
+                        
             else:
                 ic(type(current_selection))
             if self.listbox:

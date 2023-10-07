@@ -20,9 +20,9 @@ def search_for_food(search_term = "boneless skinless chicken breast") -> Tuple[L
             quantity = product.get('quantity', 'Unknown Quantity')
             
             nutriments = product.get('nutriments', {})
-            serving_size = product.get('serving_size', '100g')  # Fallback to 100g if serving size is not available.
+            serving_size = product.get('serving_size', '0g')  # Fallback to 100g if serving size is not available.
 
-            energy_serving = nutriments.get('energy_serving', nutriments.get('energy_100g', None))
+            energy_serving = nutriments.get('energy_serving', nutriments.get('energy_100g', 0))
             energy_serving_kcal = 'Unknown calories'
             if energy_serving is not None:
                 energy_serving_kcal = energy_serving / 4.184  # Convert kJ to kcal
@@ -30,9 +30,9 @@ def search_for_food(search_term = "boneless skinless chicken breast") -> Tuple[L
             else:
                 energy_str = 'Unknown Energy Content'
             
-            fats_serving = nutriments.get('fat_serving', nutriments.get('fat_100g', 'Unknown'))
-            proteins_serving = nutriments.get('proteins_serving', nutriments.get('proteins_100g', 'Unknown'))
-            carbohydrates_serving = nutriments.get('carbohydrates_serving', nutriments.get('carbohydrates_100g', 'Unknown'))
+            fats_serving = nutriments.get('fat_serving', nutriments.get('fat_100g', 0))
+            proteins_serving = nutriments.get('proteins_serving', nutriments.get('proteins_100g', 0))
+            carbohydrates_serving = nutriments.get('carbohydrates_serving', nutriments.get('carbohydrates_100g', 0))
 
             name_id_tuple = (name,product_id)
             name_id_tuples.append(name_id_tuple)
@@ -44,7 +44,8 @@ def search_for_food(search_term = "boneless skinless chicken breast") -> Tuple[L
                 'energy_serving_kcal' : energy_serving_kcal,
                 'fats_serving' : fats_serving,
                 'proteins_serving' : proteins_serving,
-                'carbohydrates_serving' : carbohydrates_serving
+                'carbohydrates_serving' : carbohydrates_serving,
+                'sugars_serving' : nutriments.get('sugars_serving',0)
             }
             
 

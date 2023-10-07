@@ -28,13 +28,15 @@ class DashboardFrame(BaseFrame):
         self.after_id_centermid = None
         self.after_id_topleft = None
 
-        self.topleft_frame = self.create_styled_frame(self.root, 0, 0, 0.5, 0.27)
-        self.topright_frame = self.create_styled_frame(self.root, 0.5, 0, 0.5, 0.27,)
-        self.centerleft_frame = self.create_styled_frame(self.root, 0, 0.27, 0.25, 0.46,)
-        self.centermid_frame = self.create_styled_frame(self.root, 0.25, 0.27, 0.5, 0.46,)
-        self.centerright_frame = self.create_styled_frame(self.root, 0.75, 0.27, 0.25, 0.46)
-        self.bottomleft_frame = self.create_styled_frame(self.root, 0, 0.73, 0.5, 0.27,bg='green')
-        self.bottomright_frame = self.create_styled_frame(self.root, 0.5, 0.73, 0.5, 0.27, bg='light coral')
+        self.topleft_frame = self.create_styled_frame(self.root, 0, 0, 0.5, 0.35)
+        self.topright_frame = self.create_styled_frame(self.root, 0.5, 0, 0.5, 0.35,)
+        self.centerleft_frame = self.create_styled_frame(self.root, 0, 0.35, 0.25, 0.65,)
+        self.centermid_frame = self.create_styled_frame(self.root, 0.25, 0.35, 0.5, 0.65,)
+        self.centerright_frame = self.create_styled_frame(self.root, 0.75, 0.35, 0.25, 0.65)
+
+        # to be implemented if you want to add more frames
+        # self.bottomleft_frame = self.create_styled_frame(self.root, 0, 0.73, 0.5, 0.27,bg='green')
+        # self.bottomright_frame = self.create_styled_frame(self.root, 0.5, 0.73, 0.5, 0.27, bg='light coral')
 
         self.setup_frames()
 
@@ -49,11 +51,11 @@ class DashboardFrame(BaseFrame):
         self.setup_centerleft()
         self.setup_centermid()
         self.setup_centerright()
-        self.setup_bottomleft()
-        self.setup_bottomright()
 
-        # self.loop_centermid_plot()
-        # self.loop_topleft_plot()
+        # to be implemented, for two additional frames
+        # self.setup_bottomleft()
+        # self.setup_bottomright()
+
 
 
         
@@ -279,7 +281,7 @@ class DashboardFrame(BaseFrame):
 
         #need to do a search to generate the list
         autocomplete_list = ["apple", "banana", "pear", "pineapple", "peach", "plum", "pomegranate", "papaya"]
-        self.entry = CustomEntry(self.centerright_frame, autocomplete_list)
+        self.entry = CustomEntry(self.centerright_frame, autocomplete_list,self)
         self.entry.pack()
     
     def setup_bottomleft(self):

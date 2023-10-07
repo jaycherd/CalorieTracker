@@ -130,7 +130,7 @@ def log_calories(calories: float,filename=cdash.CALORIESLOG_PATH) -> None:
 
     # Write updated content back to file
     with open(filename, 'w',encoding='UTF-8') as file:
-        json.dump(data, file)
+        json.dump(data, file,indent=4)
 
 def check_todays_calories(filename=cdash.CALORIESLOG_PATH) -> float:
     today = datetime.today()
