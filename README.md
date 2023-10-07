@@ -1,6 +1,6 @@
 # CalorieTracker
 ## Description:
-Just a Calorie Tracking application to get better with python, and tkinter for creating GUI's
+Just a Calorie Tracking application to get better with python, and tkinter for creating GUI's.\n
 Application also has a custom entry box which carries out a query to Open Food Facts website which gives user access to a large food facts database
 
 ![The Dashboard](./images/dashboard.png)
